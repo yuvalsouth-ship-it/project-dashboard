@@ -3,6 +3,7 @@ import { Plus, Trash2, ChevronDown } from 'lucide-react';
 import { useStore } from '../../../store/useStore';
 import { STATUS_LABELS, STATUS_COLORS } from '../../../data/initialData';
 import type { TaskStatus } from '../../../types';
+import EmailDropZone from './EmailDropZone';
 
 interface Props {
   projectId: string;
@@ -65,6 +66,9 @@ export default function TasksSection({ projectId }: Props) {
 
   return (
     <div className="p-6">
+      <div className="mb-4">
+        <EmailDropZone projectId={projectId} />
+      </div>
       <div className="flex items-center justify-between mb-4">
         <div className="flex gap-2">
           {['all', 'todo', 'in_progress', 'done', 'blocked'].map((s) => (
