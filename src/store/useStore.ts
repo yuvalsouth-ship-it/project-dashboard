@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { AppState, Task, MonthlyPlanItem, Milestone, Invoice } from '../types';
+import type { AppState, Task, MonthlyPlanItem, WeeklyEvent, Milestone, Invoice } from '../types';
 import { initialData } from '../data/initialData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
@@ -11,6 +11,10 @@ interface AppActions {
   addPlanItem: (item: Omit<MonthlyPlanItem, 'id'>) => void;
   updatePlanItem: (id: string, updates: Partial<MonthlyPlanItem>) => void;
   deletePlanItem: (id: string) => void;
+
+  addWeeklyEvent: (event: Omit<WeeklyEvent, 'id'>) => void;
+  updateWeeklyEvent: (id: string, updates: Partial<WeeklyEvent>) => void;
+  deleteWeeklyEvent: (id: string) => void;
 
   addMilestone: (milestone: Omit<Milestone, 'id'>) => void;
   updateMilestone: (id: string, updates: Partial<Milestone>) => void;
@@ -33,6 +37,7 @@ function loadFromLocalStorage(): Partial<AppState> {
       return {
         tasks: parsed.tasks ?? [],
         monthlyPlanItems: parsed.monthlyPlanItems ?? [],
+        weeklyEvents: parsed.weeklyEvents ?? [],
         milestones: parsed.milestones ?? [],
         invoices: parsed.invoices ?? [],
       };
@@ -48,6 +53,7 @@ function saveToLocalStorage(state: AppState) {
     const data = {
       tasks: state.tasks,
       monthlyPlanItems: state.monthlyPlanItems,
+      weeklyEvents: state.weeklyEvents,
       milestones: state.milestones,
       invoices: state.invoices,
     };
@@ -77,6 +83,7 @@ const savedData = loadFromLocalStorage();
 
 export const useStore = create<AppState & AppActions>()((set, get) => ({
     ...initialData,
+    weeklyEvents: [],
     ...savedData,
 
     // === TASKS ===
@@ -104,7 +111,7 @@ export const useStore = create<AppState & AppActions>()((set, get) => ({
       syncToSupabase('tasks', 'delete', { id });
     },
 
-    // === MONTHLY PLAN ===
+    // === MONTHLY PLAN (legacy) ===
     addPlanItem: (itemData) => {
       const newItem: MonthlyPlanItem = { ...itemData, id: crypto.randomUUID() };
       set((state) => ({ monthlyPlanItems: [...state.monthlyPlanItems, newItem] }));
@@ -123,6 +130,27 @@ export const useStore = create<AppState & AppActions>()((set, get) => ({
     deletePlanItem: (id) => {
       set((state) => ({ monthlyPlanItems: state.monthlyPlanItems.filter((item) => item.id !== id) }));
       syncToSupabase('monthly_plan_items', 'delete', { id });
+    },
+
+    // === WEEKLY EVENTS ===
+    addWeeklyEvent: (eventData) => {
+      const newEvent: WeeklyEvent = { ...eventData, id: crypto.randomUUID() };
+      set((state) => ({ weeklyEvents: [...state.weeklyEvents, newEvent] }));
+      syncToSupabase('weekly_events', 'insert', newEvent as unknown as Record<string, unknown>);
+    },
+
+    updateWeeklyEvent: (id, updates) => {
+      set((state) => ({
+        weeklyEvents: state.weeklyEvents.map((e) =>
+          e.id === id ? { ...e, ...updates } : e
+        ),
+      }));
+      syncToSupabase('weekly_events', 'update', { id, ...updates } as Record<string, unknown>);
+    },
+
+    deleteWeeklyEvent: (id) => {
+      set((state) => ({ weeklyEvents: state.weeklyEvents.filter((e) => e.id !== id) }));
+      syncToSupabase('weekly_events', 'delete', { id });
     },
 
     // === MILESTONES ===
@@ -179,9 +207,19 @@ export const useStore = create<AppState & AppActions>()((set, get) => ({
           supabase.from('invoices').select('*'),
         ]);
 
+        // weekly_events table might not exist yet (v2 migration)
+        let weeklyData: WeeklyEvent[] | null = null;
+        try {
+          const weeklyRes = await supabase.from('weekly_events').select('*');
+          weeklyData = weeklyRes.data;
+        } catch {
+          // Table doesn't exist yet, use local data
+        }
+
         set({
           tasks: tasksRes.data || get().tasks,
           monthlyPlanItems: planRes.data || get().monthlyPlanItems,
+          weeklyEvents: weeklyData || get().weeklyEvents,
           milestones: milestonesRes.data || get().milestones,
           invoices: invoicesRes.data || get().invoices,
         });

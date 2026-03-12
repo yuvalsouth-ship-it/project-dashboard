@@ -42,6 +42,7 @@ export const initialData: AppState = {
   projects: PROJECTS,
   tasks: [],
   monthlyPlanItems: [],
+  weeklyEvents: [],
   milestones: [],
   invoices: [],
 };

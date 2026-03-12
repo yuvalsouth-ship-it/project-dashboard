@@ -21,7 +21,7 @@ export default function ProjectPage() {
       <ProjectTabs activeTab={activeTab} onTabChange={setActiveTab} color={project.color} />
 
       {activeTab === 'tasks' && <TasksSection projectId={project.id} />}
-      {activeTab === 'monthly-plan' && <MonthlyPlanSection projectId={project.id} />}
+      {activeTab === 'monthly-plan' && <MonthlyPlanSection projectId={project.id} color={project.color} />}
       {activeTab === 'gantt' && <GanttSection projectId={project.id} color={project.color} />}
       {activeTab === 'invoices' && <InvoicesSection projectId={project.id} />}
     </div>

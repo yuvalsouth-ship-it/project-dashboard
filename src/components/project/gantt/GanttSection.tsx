@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, ChevronRight, ChevronLeft } from 'lucide-react';
+import { format, addMonths, subMonths } from 'date-fns';
+import { he } from 'date-fns/locale';
 import { useStore } from '../../../store/useStore';
 import GanttChart from './GanttChart';
 import type { Milestone } from '../../../types';
@@ -8,8 +10,6 @@ interface Props {
   projectId: string;
   color: string;
 }
-
-const MILESTONE_COLORS = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4'];
 
 export default function GanttSection({ projectId, color }: Props) {
   const allMilestones = useStore((s) => s.milestones);
@@ -23,14 +23,25 @@ export default function GanttSection({ projectId, color }: Props) {
   const updateMilestone = useStore((s) => s.updateMilestone);
   const deleteMilestone = useStore((s) => s.deleteMilestone);
 
+  // Gantt range: 3 months starting from current month
+  const now = new Date();
+  const [rangeStart, setRangeStart] = useState(new Date(now.getFullYear(), now.getMonth()));
+  const [numMonths] = useState(3);
+
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
+    category: '',
     start_date: '',
     end_date: '',
-    color: color,
   });
+
+  // Get unique categories for autocomplete
+  const categories = useMemo(
+    () => [...new Set(milestones.map((m) => m.category).filter(Boolean))],
+    [milestones]
+  );
 
   const handleSubmit = () => {
     if (!formData.title.trim() || !formData.start_date || !formData.end_date) return;
@@ -38,33 +49,34 @@ export default function GanttSection({ projectId, color }: Props) {
     if (editingId) {
       updateMilestone(editingId, {
         title: formData.title.trim(),
+        category: formData.category.trim(),
         start_date: formData.start_date,
         end_date: formData.end_date,
-        color: formData.color,
       });
       setEditingId(null);
     } else {
       addMilestone({
         project_id: projectId,
         title: formData.title.trim(),
+        category: formData.category.trim(),
         start_date: formData.start_date,
         end_date: formData.end_date,
-        color: formData.color,
+        color: color,
         completed: false,
         order_index: milestones.length,
       });
     }
 
-    setFormData({ title: '', start_date: '', end_date: '', color });
+    setFormData({ title: '', category: '', start_date: '', end_date: '' });
     setShowForm(false);
   };
 
   const startEdit = (milestone: Milestone) => {
     setFormData({
       title: milestone.title,
+      category: milestone.category || '',
       start_date: milestone.start_date,
       end_date: milestone.end_date,
-      color: milestone.color,
     });
     setEditingId(milestone.id);
     setShowForm(true);
@@ -73,43 +85,72 @@ export default function GanttSection({ projectId, color }: Props) {
   const cancelForm = () => {
     setShowForm(false);
     setEditingId(null);
-    setFormData({ title: '', start_date: '', end_date: '', color });
+    setFormData({ title: '', category: '', start_date: '', end_date: '' });
   };
+
+  const rangeLabel = `${format(rangeStart, 'MMMM', { locale: he })} - ${format(addMonths(rangeStart, numMonths - 1), 'MMMM yyyy', { locale: he })}`;
 
   return (
     <div className="p-6">
+      {/* Header with range navigation */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-gray-500">{milestones.length} אבני דרך</h3>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setRangeStart(subMonths(rangeStart, 1))} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <ChevronRight size={18} className="text-gray-600" />
+          </button>
+          <h3 className="text-sm font-bold text-gray-700 min-w-[200px] text-center">{rangeLabel}</h3>
+          <button onClick={() => setRangeStart(addMonths(rangeStart, 1))} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <ChevronLeft size={18} className="text-gray-600" />
+          </button>
+          <span className="text-xs text-gray-400 mr-2">{milestones.length} משימות</span>
+        </div>
         <button
           onClick={() => { cancelForm(); setShowForm(true); }}
-          className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 text-white text-sm rounded-lg hover:opacity-90 transition-colors"
+          style={{ backgroundColor: color }}
         >
           <Plus size={16} />
-          <span>אבן דרך חדשה</span>
+          <span>משימה חדשה</span>
         </button>
       </div>
 
       {/* Add/Edit Form */}
       {showForm && (
-        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+        <div className="bg-white rounded-xl border-2 p-4 mb-4 shadow-lg" style={{ borderColor: color }}>
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-medium text-gray-700">
-              {editingId ? 'עריכת אבן דרך' : 'אבן דרך חדשה'}
+            <h4 className="text-sm font-bold text-gray-700">
+              {editingId ? 'עריכת משימה' : 'משימה חדשה'}
             </h4>
             <button onClick={cancelForm} className="text-gray-400 hover:text-gray-600">
               <X size={16} />
             </button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="col-span-2">
-              <label className="text-xs text-gray-500 mb-1 block">כותרת</label>
+              <label className="text-xs text-gray-500 mb-1 block">שם המשימה</label>
               <input
                 autoFocus
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="שם אבן הדרך..."
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                placeholder="תיאור המשימה..."
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+            <div className="col-span-2">
+              <label className="text-xs text-gray-500 mb-1 block">קטגוריה</label>
+              <input
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                placeholder="לדוגמה: תנועה, תשתיות, תיאומים..."
+                list="categories-list"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <datalist id="categories-list">
+                {categories.map((cat) => (
+                  <option key={cat} value={cat} />
+                ))}
+              </datalist>
             </div>
             <div>
               <label className="text-xs text-gray-500 mb-1 block">תאריך התחלה</label>
@@ -129,33 +170,16 @@ export default function GanttSection({ projectId, color }: Props) {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            <div>
-              <label className="text-xs text-gray-500 mb-1 block">צבע</label>
-              <div className="flex items-center gap-1.5 mt-1">
-                {MILESTONE_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setFormData({ ...formData, color: c })}
-                    className={`w-6 h-6 rounded-full transition-all ${
-                      formData.color === c ? 'ring-2 ring-offset-1 ring-gray-400 scale-110' : ''
-                    }`}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
-            </div>
           </div>
           <div className="flex gap-2 mt-3">
             <button
               onClick={handleSubmit}
-              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 text-white text-sm rounded-lg hover:opacity-90"
+              style={{ backgroundColor: color }}
             >
               {editingId ? 'עדכן' : 'הוסף'}
             </button>
-            <button
-              onClick={cancelForm}
-              className="px-4 py-2 bg-gray-200 text-gray-600 text-sm rounded-lg hover:bg-gray-300"
-            >
+            <button onClick={cancelForm} className="px-4 py-2 bg-gray-200 text-gray-600 text-sm rounded-lg hover:bg-gray-300">
               ביטול
             </button>
           </div>
@@ -166,13 +190,16 @@ export default function GanttSection({ projectId, color }: Props) {
       {milestones.length > 0 ? (
         <GanttChart
           milestones={milestones}
+          rangeStart={rangeStart}
+          numMonths={numMonths}
+          projectColor={color}
           onEdit={startEdit}
           onToggleComplete={(id, completed) => updateMilestone(id, { completed })}
           onDelete={deleteMilestone}
         />
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-400 text-sm">
-          אין אבני דרך עדיין. הוסף אבן דרך חדשה!
+          אין משימות עדיין. הוסף משימה חדשה!
         </div>
       )}
     </div>

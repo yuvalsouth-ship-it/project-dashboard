@@ -32,10 +32,21 @@ export interface MonthlyPlanItem {
   order_index: number;
 }
 
+export interface WeeklyEvent {
+  id: string;
+  project_id: string;
+  event_date: string;
+  event_time: string;
+  title: string;
+  notes: string;
+  order_index: number;
+}
+
 export interface Milestone {
   id: string;
   project_id: string;
   title: string;
+  category: string;
   start_date: string;
   end_date: string;
   color: string;
@@ -57,6 +68,7 @@ export interface AppState {
   projects: Project[];
   tasks: Task[];
   monthlyPlanItems: MonthlyPlanItem[];
+  weeklyEvents: WeeklyEvent[];
   milestones: Milestone[];
   invoices: Invoice[];
 }
