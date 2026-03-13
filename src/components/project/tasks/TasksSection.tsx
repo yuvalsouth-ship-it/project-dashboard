@@ -4,6 +4,7 @@ import { useStore } from '../../../store/useStore';
 import { STATUS_LABELS, STATUS_COLORS } from '../../../data/initialData';
 import type { TaskStatus } from '../../../types';
 import EmailDropZone from './EmailDropZone';
+import DocumentDropZone from './DocumentDropZone';
 
 interface Props {
   projectId: string;
@@ -66,8 +67,9 @@ export default function TasksSection({ projectId }: Props) {
 
   return (
     <div className="p-6">
-      <div className="mb-4">
+      <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
         <EmailDropZone projectId={projectId} />
+        <DocumentDropZone projectId={projectId} />
       </div>
       <div className="flex items-center justify-between mb-4">
         <div className="flex gap-2">
