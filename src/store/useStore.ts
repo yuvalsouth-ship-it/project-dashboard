@@ -81,10 +81,21 @@ const syncToSupabase = async (table: string, action: string, data: Record<string
 
 const savedData = loadFromLocalStorage();
 
+// Merge initial milestones for projects that have no milestones in saved data
+function mergedMilestones(): Milestone[] {
+  const saved = savedData.milestones ?? [];
+  const projectsWithMilestones = new Set(saved.map((m) => m.project_id));
+  const missing = initialData.milestones.filter(
+    (m) => !projectsWithMilestones.has(m.project_id)
+  );
+  return [...saved, ...missing];
+}
+
 export const useStore = create<AppState & AppActions>()((set, get) => ({
     ...initialData,
     weeklyEvents: [],
     ...savedData,
+    milestones: mergedMilestones(),
 
     // === TASKS ===
     addTask: (taskData) => {
