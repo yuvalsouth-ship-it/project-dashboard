@@ -3,6 +3,9 @@ import { Plus, Trash2, ChevronDown } from 'lucide-react';
 import { useStore } from '../../../store/useStore';
 import { STATUS_LABELS, STATUS_COLORS } from '../../../data/initialData';
 import type { TaskStatus } from '../../../types';
+import type { ExtractedTask } from '../../../lib/aiExtractTasks';
+import PdfUploadButton from './PdfUploadButton';
+import TaskPreviewDialog from './TaskPreviewDialog';
 
 interface Props {
   projectId: string;
@@ -22,6 +25,7 @@ export default function TasksSection({ projectId }: Props) {
   const [newDueDate, setNewDueDate] = useState('');
   const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [previewTasks, setPreviewTasks] = useState<ExtractedTask[] | null>(null);
 
   const filteredTasks = filter === 'all' ? tasks : tasks.filter((t) => t.status === filter);
 
@@ -63,6 +67,21 @@ export default function TasksSection({ projectId }: Props) {
     return new Date(dueDate) < new Date();
   };
 
+  const handleConfirmImport = (importedTasks: ExtractedTask[]) => {
+    importedTasks.forEach((task, i) => {
+      addTask({
+        project_id: projectId,
+        title: task.title,
+        status: 'todo',
+        assignee: task.assignee,
+        due_date: task.due_date,
+        notes: task.notes,
+        order_index: tasks.length + i,
+      });
+    });
+    setPreviewTasks(null);
+  };
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
@@ -84,13 +103,16 @@ export default function TasksSection({ projectId }: Props) {
             </button>
           ))}
         </div>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={16} />
-          <span>משימה חדשה</span>
-        </button>
+        <div className="flex gap-2">
+          <PdfUploadButton onTasksExtracted={setPreviewTasks} />
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={16} />
+            <span>משימה חדשה</span>
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -274,6 +296,14 @@ export default function TasksSection({ projectId }: Props) {
           </tbody>
         </table>
       </div>
+
+      {previewTasks && (
+        <TaskPreviewDialog
+          tasks={previewTasks}
+          onConfirm={handleConfirmImport}
+          onCancel={() => setPreviewTasks(null)}
+        />
+      )}
     </div>
   );
 }
