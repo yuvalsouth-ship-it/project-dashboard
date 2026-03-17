@@ -52,7 +52,7 @@ export default function InvoicesSection({ projectId }: Props) {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-gray-500">
           {invoices.length} חשבונות |{' '}
@@ -67,8 +67,8 @@ export default function InvoicesSection({ projectId }: Props) {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <table className="w-full">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+        <table className="w-full min-w-[600px]">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 w-[25%]">שם יועץ</th>

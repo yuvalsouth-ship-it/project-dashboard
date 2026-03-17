@@ -91,9 +91,9 @@ export default function GanttSection({ projectId, color }: Props) {
   const rangeLabel = `${format(rangeStart, 'MMMM', { locale: he })} - ${format(addMonths(rangeStart, numMonths - 1), 'MMMM yyyy', { locale: he })}`;
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Header with range navigation */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-3">
         <div className="flex items-center gap-3">
           <button onClick={() => setRangeStart(subMonths(rangeStart, 1))} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <ChevronRight size={18} className="text-gray-600" />

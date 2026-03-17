@@ -95,7 +95,8 @@ export default function GanttChart({ milestones, rangeStart, numMonths, projectC
     return true;
   };
 
-  const LABEL_WIDTH = 280;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const LABEL_WIDTH = isMobile ? 180 : 280;
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">

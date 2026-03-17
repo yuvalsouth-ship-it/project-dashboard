@@ -1,19 +1,43 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, X } from 'lucide-react';
 import { PROJECTS } from '../../data/initialData';
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onNavigate: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose, onNavigate }: SidebarProps) {
   return (
-    <aside className="w-64 bg-white border-l border-gray-200 h-screen sticky top-0 flex flex-col shadow-sm">
-      <div className="p-5 border-b border-gray-200">
-        <h1 className="text-lg font-bold text-gray-800">ניהול פרויקטים</h1>
-        <p className="text-xs text-gray-500 mt-1">קידום תב"עות</p>
+    <aside
+      className={`
+        w-64 bg-white border-l border-gray-200 h-screen flex flex-col shadow-sm
+        fixed top-0 right-0 z-50 transition-transform duration-300
+        md:sticky md:top-0 md:z-auto md:translate-x-0
+        ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+      `}
+    >
+      <div className="p-5 border-b border-gray-200 flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-gray-800">ניהול פרויקטים</h1>
+          <p className="text-xs text-gray-500 mt-1">קידום תב"עות</p>
+        </div>
+        {/* Close button - mobile only */}
+        <button
+          onClick={onClose}
+          className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+          aria-label="סגור תפריט"
+        >
+          <X size={20} />
+        </button>
       </div>
 
       <nav className="flex-1 overflow-y-auto py-3">
         <NavLink
           to="/"
           end
+          onClick={onNavigate}
           className={({ isActive }) =>
             `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${
               isActive
@@ -34,6 +58,7 @@ export default function Sidebar() {
           <NavLink
             key={project.id}
             to={`/project/${project.id}`}
+            onClick={onNavigate}
             className={({ isActive }) =>
               `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${
                 isActive

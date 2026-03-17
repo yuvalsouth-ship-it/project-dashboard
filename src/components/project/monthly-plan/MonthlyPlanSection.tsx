@@ -114,7 +114,7 @@ export default function MonthlyPlanSection({ projectId, color }: Props) {
   const isFormOpen = addingForDate !== null || editingEvent !== null;
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       {/* Month Selector */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -188,9 +188,9 @@ export default function MonthlyPlanSection({ projectId, color }: Props) {
       )}
 
       {/* Weekly Calendar */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
         {/* Day Headers */}
-        <div className="grid grid-cols-5 bg-gray-50 border-b border-gray-200">
+        <div className="grid grid-cols-5 bg-gray-50 border-b border-gray-200 min-w-[500px]">
           {DAY_NAMES.map((day) => (
             <div key={day} className="px-3 py-2.5 text-center text-xs font-bold text-gray-500 border-l border-gray-200 first:border-l-0">
               {day}
@@ -200,7 +200,7 @@ export default function MonthlyPlanSection({ projectId, color }: Props) {
 
         {/* Weeks */}
         {weeks.map((week, weekIdx) => (
-          <div key={weekIdx} className="grid grid-cols-5 border-b border-gray-200 last:border-b-0">
+          <div key={weekIdx} className="grid grid-cols-5 border-b border-gray-200 last:border-b-0 min-w-[500px]">
             {week.map((day, dayIdx) => {
               const isCurrentMonth = isSameMonth(day, currentDate);
               const isToday = isSameDay(day, now);

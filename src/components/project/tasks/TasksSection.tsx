@@ -83,9 +83,9 @@ export default function TasksSection({ projectId }: Props) {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-2">
+    <div className="p-4 md:p-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-3">
+        <div className="flex flex-wrap gap-2">
           {['all', 'todo', 'in_progress', 'done', 'blocked'].map((s) => (
             <button
               key={s}
@@ -115,8 +115,8 @@ export default function TasksSection({ projectId }: Props) {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <table className="w-full">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+        <table className="w-full min-w-[700px]">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 w-[30%]">כותרת</th>
