@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const location = useLocation();
-
   // Close sidebar on navigation (mobile)
   const handleNavigate = () => setSidebarOpen(false);
 
