@@ -119,8 +119,8 @@ export default function TasksSection({ projectId }: Props) {
         <table className="w-full min-w-[700px]">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 w-[30%]">כותרת</th>
-              <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 w-[12%]">סטטוס</th>
+              <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 w-[30%]">משימה</th>
+              <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 w-[12%]">דחיפות</th>
               <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 w-[15%]">אחראי</th>
               <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 w-[13%]">תאריך יעד</th>
               <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 w-[25%]">הערות</th>
